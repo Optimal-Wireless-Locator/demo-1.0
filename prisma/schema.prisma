@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Devices {
+  mac_address String @id
+  name        String
+
+  Readings Readings[]
+  Historic Historic[]
+}
+
+model Places {
+  id                 Int    @id @default(autoincrement())
+  name               String @unique
+  width              Float
+  height             Float
+  esp_positions      String
+  propagation_factor Float
+  one_meter_rssi     Float
+}
+
+model Readings {
+  id      Int      @id @default(autoincrement())
+  esp32   String
+  rssi    Int
+  read_at DateTime
+
+  mac_address        Devices @relation(fields: [devicesMac_address], references: [mac_address])
+  devicesMac_address String
+}
+
+model Historic {
+  id                 Int      @id @default(autoincrement())
+  x                  Float
+  y                  Float
+  tracked_at         DateTime
+  calculation_inputs String
+
+  mac_address        Devices @relation(fields: [devicesMac_address], references: [mac_address])
+  devicesMac_address String
+}
