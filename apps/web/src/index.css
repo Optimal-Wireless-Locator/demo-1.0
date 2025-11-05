@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('/src/assets/fonts/Coolvetica Rg.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-cool {
+  font-family: 'Coolvetica', sans-serif !important;
+}
