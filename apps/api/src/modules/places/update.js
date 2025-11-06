@@ -23,6 +23,14 @@ export const updatePlace = async (req, res) => {
       dataToUpdate.name = data.name
     }
 
+    if (data.width !== undefined) {
+      dataToUpdate.width = data.width
+    }
+
+    if (data.height !== undefined) {
+      dataToUpdate.height = data.height
+    }
+
     if (data.one_meter_rssi !== undefined) {
       dataToUpdate.one_meter_rssi = data.one_meter_rssi
     }
@@ -31,11 +39,7 @@ export const updatePlace = async (req, res) => {
       dataToUpdate.propagation_factor = data.propagation_factor
     }
 
-    if (
-      data.name === undefined &&
-      data.one_meter_rssi === undefined &&
-      data.propagation_factor === undefined
-    ) {
+    if ( data === undefined ) {
       return res.status(400).send('Fill in at least one field')
     }
 
