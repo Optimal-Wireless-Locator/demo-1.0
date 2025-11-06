@@ -15,7 +15,7 @@ export const getHistoricLocation = async (req, res) => {
     }
 
     const historic = await prisma.historic.findMany({
-      where: { devicesMac_address: req.params.mac_address },
+      where: { devicesMac_address: macAddress },
       orderBy: { tracked_at: 'asc' },
     })
 
