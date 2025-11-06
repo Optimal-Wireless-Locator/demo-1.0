@@ -3,7 +3,6 @@ import logo from "./assets/images/owlwhite.svg";
 import "./assets/fonts/Coolvetica Rg.otf";
 import { motion, useScroll, useTransform } from "framer-motion";
 import PostApp from "./components/PostApp";
-import Navigation from "./components/Navigation";
 import ManagementPage from "./components/ManagementPage";
 
 function App() {
@@ -17,10 +16,7 @@ function App() {
   if (currentPage === 'management') {
     return (
       <div className="min-h-screen bg-black">
-        <div className="p-6">
-          <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
-          <ManagementPage />
-        </div>
+        <ManagementPage onBackToHome={() => setCurrentPage('home')} />
       </div>
     );
   }
@@ -86,10 +82,6 @@ function HomePage({ currentPage, setCurrentPage }) {
 
   return (
     <motion.div className="h-[200vh] flex flex-col" style={{ backgroundColor }}>
-      {/* Navigation */}
-      <div className="fixed top-6 left-6 right-6 z-30">
-        <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
-      </div>
 
       <section className="h-screen w-full p-6 flex items-center justify-center ">
         <div
@@ -128,7 +120,7 @@ function HomePage({ currentPage, setCurrentPage }) {
             style={{ opacity: helloOpacity, y: helloY }}
             className="w-full flex justify-center"
           >
-            <PostApp />
+            <PostApp onNavigateToOWL={() => setCurrentPage('management')} />
           </motion.div>
         </div>
       </section>

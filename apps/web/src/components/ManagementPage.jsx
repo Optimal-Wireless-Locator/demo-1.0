@@ -1,15 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2 } from 'lucide-react';
+import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2, ArrowLeft } from 'lucide-react';
 import { useApiData } from '../hooks/useApiData';
 import StatsCards from './StatsCards';
 import SearchAndFilters from './SearchAndFilters';
 import PlaceVisualization from './PlaceVisualization';
-import CreateForms from './CreateForms';
 import PlacesGallery from './PlacesGallery';
+import ConfirmDialog from './ConfirmDialog';
 import logo from '../assets/images/logo.svg';
+import logotipo from '../assets/images/owlwhite.svg';
 
-function ManagementPage() {
+function ManagementPage({ onBackToHome }) {
   const [activeTab, setActiveTab] = useState('places');
   const [editingItem, setEditingItem] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -17,6 +18,13 @@ function ManagementPage() {
   const [sortBy, setSortBy] = useState('');
   const [viewingPlace, setViewingPlace] = useState(null);
   const [fullscreenPlace, setFullscreenPlace] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    type: 'danger'
+  });
   
   const {
     places,
@@ -50,23 +58,32 @@ function ManagementPage() {
       setEditForm({});
     } catch (error) {
       console.error('Erro ao salvar:', error);
-      alert('Erro ao salvar alterações');
+      // Aqui podemos adicionar um toast de erro no futuro
     }
   };
 
-  const handleDelete = async (item, type) => {
-    if (!confirm(`Tem certeza que deseja excluir ${item.name || item.mac_address}?`)) return;
-
-    try {
-      if (type === 'place') {
-        await deletePlace(item.name);
-      } else {
-        await deleteDevice(item.mac_address);
-      }
-    } catch (error) {
-      console.error('Erro ao excluir:', error);
-      alert('Erro ao excluir item');
-    }
+  const handleDelete = (item, type) => {
+    const itemName = item.name || item.mac_address;
+    const itemType = type === 'place' ? 'place' : 'tag';
+    
+    setConfirmDialog({
+      isOpen: true,
+      title: `Excluir ${itemType}`,
+      message: `Tem certeza que deseja excluir "${itemName}"? Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        try {
+          if (type === 'place') {
+            await deletePlace(item.name);
+          } else {
+            await deleteDevice(item.mac_address);
+          }
+        } catch (error) {
+          console.error('Erro ao excluir:', error);
+          // Aqui podemos adicionar um toast de erro no futuro
+        }
+      },
+      type: 'danger'
+    });
   };
 
   const handleRefresh = () => {
@@ -77,13 +94,7 @@ function ManagementPage() {
     }
   };
 
-  const handlePlaceCreated = (newPlace) => {
-    fetchPlaces();
-  };
 
-  const handleDeviceCreated = (newDevice) => {
-    fetchDevices();
-  };
 
   // Filtrar e ordenar dados - apenas nome e área
   const filteredPlaces = useMemo(() => {
@@ -338,7 +349,7 @@ function ManagementPage() {
       <div className="fixed inset-0 bg-black z-50 flex flex-col">
         <div className="flex justify-between items-center p-6 border-b border-gray-800">
           <div className="flex items-center space-x-4">
-            <img src={logo} alt="OWL Logo" className="h-8 w-8" />
+            <img src={logotipo} alt="OWL Logo" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-white">{fullscreenPlace.name}</h1>
           </div>
           <button
@@ -370,11 +381,21 @@ function ManagementPage() {
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-2">
-            <img src={logo} alt="OWL Logo" className="h-10 w-10" />
-            <h1 className="text-3xl text-white font-cool">OWL</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <img src={logo} alt="OWL Logo" className="h-10 w-10" />
+              <h1 className="text-3xl text-white font-cool">OWL</h1>
+            </div>
+            <button
+              onClick={onBackToHome}
+              className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              title="Voltar para Home"
+            >
+              <ArrowLeft size={20} />
+              <span>Voltar</span>
+            </button>
           </div>
-          <p className="text-gray-400">Sistema de gerenciamento de objetos rastreados</p>
+          <p className="text-gray-400">Sistema de gerenciamento de places e tags</p>
         </div>
 
         {/* Stats Cards */}
@@ -429,14 +450,7 @@ function ManagementPage() {
           </div>
         )}
 
-        {/* Create Forms - apenas para places e devices */}
-        {activeTab !== 'visualizations' && (
-          <CreateForms
-            activeTab={activeTab}
-            onPlaceCreated={handlePlaceCreated}
-            onDeviceCreated={handleDeviceCreated}
-          />
-        )}
+
 
         {/* Search and Filters - apenas para places e devices */}
         {activeTab !== 'visualizations' && (
@@ -478,7 +492,7 @@ function ManagementPage() {
                   {filteredPlaces.length === 0 ? (
                     <div className="text-center py-12 text-gray-400">
                       {places.length === 0 
-                        ? "Nenhum place encontrado. Use o formulário para criar um novo."
+                        ? "Nenhum place encontrado. Vá para a página Home para criar um novo."
                         : "Nenhum place corresponde à sua busca."
                       }
                     </div>
@@ -504,7 +518,7 @@ function ManagementPage() {
                   {filteredDevices.length === 0 ? (
                     <div className="text-center py-12 text-gray-400">
                       {devices.length === 0 
-                        ? "Nenhuma tag encontrada. Use o formulário para criar uma nova."
+                        ? "Nenhuma tag encontrada. Vá para a página Home para criar uma nova."
                         : "Nenhuma tag corresponde à sua busca."
                       }
                     </div>
@@ -590,6 +604,16 @@ function ManagementPage() {
             </motion.div>
           </motion.div>
         )}
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          type={confirmDialog.type}
+        />
       </div>
     </div>
   );
