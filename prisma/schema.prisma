@@ -10,9 +10,6 @@ datasource db {
 model Devices {
   mac_address String @id
   name        String
-
-  Readings Readings[]
-  Historic Historic[]
 }
 
 model Places {
@@ -26,12 +23,10 @@ model Places {
 }
 
 model Readings {
-  id      Int      @id @default(autoincrement())
-  esp32   String
-  rssi    Int
-  read_at DateTime
-
-  mac_address        Devices @relation(fields: [devicesMac_address], references: [mac_address])
+  id                 Int      @id @default(autoincrement())
+  esp32              String
+  rssi               Int
+  read_at            DateTime
   devicesMac_address String
 }
 
@@ -41,7 +36,5 @@ model Historic {
   y                  Float
   tracked_at         DateTime
   calculation_inputs String
-
-  mac_address        Devices @relation(fields: [devicesMac_address], references: [mac_address])
   devicesMac_address String
 }

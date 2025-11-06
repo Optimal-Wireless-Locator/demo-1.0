@@ -27,12 +27,7 @@ export const createReading = async (req, res) => {
         esp32: espID,
         rssi: rssiInt,
         read_at: new Date(),
-
-        mac_address: {
-          connect: {
-            mac_address: m,
-          },
-        },
+        devicesMac_address: deviceExists.mac_address,
       },
     })
 
