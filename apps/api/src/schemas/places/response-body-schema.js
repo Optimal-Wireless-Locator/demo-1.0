@@ -10,6 +10,8 @@ export const createPlaceBodySchema = z.object({
 
 export const updatePlaceBodySchema = z.object({
   name: z.string().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
   propagation_factor: z.number().optional(),
   one_meter_rssi: z.number().optional(),
 })
