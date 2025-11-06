@@ -3,21 +3,46 @@ import logo from "./assets/images/owlwhite.svg";
 import "./assets/fonts/Coolvetica Rg.otf";
 import { motion, useScroll, useTransform } from "framer-motion";
 import PostApp from "./components/PostApp";
+import Navigation from "./components/Navigation";
+import ManagementPage from "./components/ManagementPage";
 
 function App() {
-  const { scrollY } = useScroll();
+  const [currentPage, setCurrentPage] = useState('home');
 
-  // background transition: use vh-based values for consistent behavior across screen sizes
+  useEffect(() => {
+    document.title = `OWL System - ${currentPage}`;
+  }, [currentPage]);
+
+  // Se estiver na página de gerenciamento
+  if (currentPage === 'management') {
+    return (
+      <div className="min-h-screen bg-black">
+        <div className="p-6">
+          <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
+          <ManagementPage />
+        </div>
+      </div>
+    );
+  }
+
+
+
+  // Página Home
+  return <HomePage currentPage={currentPage} setCurrentPage={setCurrentPage} />;
+}
+
+function HomePage({ currentPage, setCurrentPage }) {
+  const { scrollY } = useScroll();
+  const logoRef = useRef(null);
+  const [coverScale, setCoverScale] = useState(2);
+  
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const backgroundColor = useTransform(
     scrollY,
-    [0, vh * 0.7], // transição mais rápida (70% da viewport)
+    [0, vh * 0.7], 
     ["rgb(0,0,0)", "rgb(255,255,255)"]
   );
-
-  // logo: compute scale needed to cover viewport
-  const logoRef = useRef(null);
-  const [coverScale, setCoverScale] = useState(2);
+  
   useEffect(() => {
     function computeScale() {
       const el = logoRef.current;
@@ -25,17 +50,13 @@ function App() {
       const rect = el.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const s = Math.max(vw / rect.width, vh / rect.height) * 5; // zoom maior
+      const s = Math.max(vw / rect.width, vh / rect.height) * 5;
       setCoverScale(s);
     }
 
-    // Calcula scale inicial
     computeScale();
-
-    // Recalcula quando a janela é redimensionada
     window.addEventListener("resize", computeScale);
-
-    // Recalcula periodicamente durante scroll para evitar bugs
+    
     const scrollHandler = () => {
       requestAnimationFrame(computeScale);
     };
@@ -51,12 +72,10 @@ function App() {
   const logoOpacity = useTransform(scrollY, [0, coverScroll], [1, 0]);
   const logoScale = useTransform(scrollY, [0, coverScroll], [1, coverScale]);
 
-  // threshold for showing the post-white content (50% viewport for easier testing)
-  const threshold =
-    typeof window !== "undefined" ? window.innerHeight * 0.5 : 400;
+  const threshold = typeof window !== "undefined" ? window.innerHeight * 0.5 : 400;
   const helloOpacity = useTransform(
     scrollY,
-    [threshold, threshold + vh * 0.3], // 30% da viewport para fade in
+    [threshold, threshold + vh * 0.3], 
     [0, 1]
   );
   const helloY = useTransform(
@@ -65,17 +84,13 @@ function App() {
     [20, 0]
   );
 
-  const [showPostWhite, setShowPostWhite] = useState(false);
-  useEffect(() => {
-    if (!scrollY) return;
-    const unsub = scrollY.onChange((v) => setShowPostWhite(v >= threshold));
-    return unsub;
-  }, [scrollY, threshold]);
-
-  // simplificado: não usamos medições adicionais; mantemos PostApp no fluxo normal
-
   return (
     <motion.div className="h-[200vh] flex flex-col" style={{ backgroundColor }}>
+      {/* Navigation */}
+      <div className="fixed top-6 left-6 right-6 z-30">
+        <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
+      </div>
+
       <section className="h-screen w-full p-6 flex items-center justify-center ">
         <div
           style={{
@@ -120,4 +135,5 @@ function App() {
     </motion.div>
   );
 }
+
 export default App;

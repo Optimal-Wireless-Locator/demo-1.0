@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import { swaggerUiMiddleware, swaggerUiSetup } from './apps/api/lib/swagger.js'
 import 'dotenv/config'
 import { devicesRoutes } from './apps/api/src/routes/devices.js'
@@ -7,6 +8,12 @@ import { locationsRoutes } from './apps/api/src/routes/locations.js'
 import { readingsRoutes } from './apps/api/src/routes/readings.js'
 
 export const app = express()
+
+// CORS middleware
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
+    credentials: true
+}))
 
 app.use('/api-docs', swaggerUiMiddleware, swaggerUiSetup)
 
