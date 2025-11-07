@@ -7,33 +7,34 @@ export const getCurrentLocation = async (req, res) => {
   try {
     const { macAddress, placeName } = currentLocationBodySchema.parse(req.body)
 
-    const device = await prisma.devices.findUnique({
+    const deviceExists = await prisma.devices.findUnique({
       where: {
         mac_address: macAddress,
       },
     })
 
-    if (!device) {
+    if (!deviceExists) {
       return res.status(404).send('Device not found.')
     }
 
-    const place = await prisma.places.findUnique({
+    const placeExists = await prisma.places.findUnique({
       where: {
         name: placeName,
       },
     })
 
-    if (!place) {
+    if (!placeExists) {
       return res.status(404).send('Place not found.')
     }
 
-    const { used, x, y } = await trilateration(placeName, macAddress)
+    const { used, x, y, place } = await trilateration(placeName, macAddress)
 
     await prisma.historic.create({
       data: {
         devicesMac_address: macAddress,
         x,
         y,
+        place_name: place,
         calculation_inputs: JSON.stringify(used),
         tracked_at: new Date(),
       },
@@ -41,6 +42,7 @@ export const getCurrentLocation = async (req, res) => {
 
     return res.status(200).send({
       mac_address: macAddress,
+      placeName: place,
       x,
       y,
       used_sensors: used,

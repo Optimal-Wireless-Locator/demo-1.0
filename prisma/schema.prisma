@@ -13,7 +13,7 @@ model Devices {
 }
 
 model Places {
-  id                 Int    @id @default(autoincrement())
+  id                 String @id @default(uuid())
   name               String @unique
   width              Float
   height             Float
@@ -25,6 +25,7 @@ model Places {
 model Readings {
   id                 Int      @id @default(autoincrement())
   esp32              String
+  place_name         String
   rssi               Int
   read_at            DateTime
   devicesMac_address String
@@ -34,6 +35,7 @@ model Historic {
   id                 Int      @id @default(autoincrement())
   x                  Float
   y                  Float
+  place_name         String
   tracked_at         DateTime
   calculation_inputs String
   devicesMac_address String
