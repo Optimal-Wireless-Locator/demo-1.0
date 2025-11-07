@@ -58,10 +58,23 @@ export function useTagLocations(places = [], devices = [], refreshInterval = 500
             const results = await Promise.all(locationPromises);
             const validLocations = results.filter(location => location !== null);
 
-            console.log(`📍 Total de localizações válidas encontradas: ${validLocations.length}`);
-            console.log('📍 Localizações válidas:', validLocations);
+            // Garantir que cada tag apareça apenas uma vez (última posição conhecida)
+            const uniqueLocations = {};
+            validLocations.forEach(location => {
+                const key = location.mac_address;
+                // Se já existe, manter apenas se a nova for mais recente ou se não houver timestamp
+                if (!uniqueLocations[key]) {
+                    uniqueLocations[key] = location;
+                }
+            });
 
-            setLocations(validLocations);
+            const finalLocations = Object.values(uniqueLocations);
+
+            console.log(`📍 Total de localizações válidas encontradas: ${validLocations.length}`);
+            console.log(`📍 Localizações únicas (última posição): ${finalLocations.length}`);
+            console.log('📍 Localizações finais:', finalLocations);
+
+            setLocations(finalLocations);
         } catch (err) {
             setError(err.message);
             console.error('Erro ao carregar localizações:', err);

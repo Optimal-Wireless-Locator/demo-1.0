@@ -294,7 +294,7 @@ function PlaceVisualization({ place, fullscreen = false, tagLocations = [], onFu
               <span>ESP32</span>
             </div>
             <div className="flex items-center space-x-1">
-              <img src={tagIcon} alt="Tag" className="w-3 h-3" />
+              <img src={tagIcon} alt="Tag" className="w-3 h-3 object-contain" />
               <span>Tags</span>
             </div>
             <div className="flex items-center space-x-1">
