@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2, ArrowLeft } from 'lucide-react';
+import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2, ArrowLeft, Clock } from 'lucide-react';
 import { useApiData } from '../hooks/useApiData';
 import { useTagLocations } from '../hooks/useTagLocations';
 import StatsCards from './StatsCards';
@@ -8,6 +8,7 @@ import SearchAndFilters from './SearchAndFilters';
 import PlaceVisualization from './PlaceVisualization';
 import PlacesGallery from './PlacesGallery';
 import ConfirmDialog from './ConfirmDialog';
+import TagHistoryViewer from './TagHistoryViewer';
 
 import logo from '../assets/images/logo.svg';
 import logotipo from '../assets/images/logo.svg';
@@ -20,6 +21,7 @@ function ManagementPage({ onBackToHome }) {
   const [sortBy, setSortBy] = useState('');
   const [viewingPlace, setViewingPlace] = useState(null);
   const [fullscreenPlace, setFullscreenPlace] = useState(null);
+  const [viewingTagHistory, setViewingTagHistory] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     title: '',
@@ -327,6 +329,13 @@ function ManagementPage({ onBackToHome }) {
                     ) : (
                       <>
                         <button
+                          onClick={() => setViewingTagHistory(device)}
+                          className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
+                          title="Ver histórico"
+                        >
+                          <Clock size={16} />
+                        </button>
+                        <button
                           onClick={() => handleEdit(device, 'device')}
                           className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
@@ -629,6 +638,15 @@ function ManagementPage({ onBackToHome }) {
               </div>
             </motion.div>
           </motion.div>
+        )}
+
+        {/* Tag History Viewer */}
+        {viewingTagHistory && (
+          <TagHistoryViewer
+            tag={viewingTagHistory}
+            places={places}
+            onClose={() => setViewingTagHistory(null)}
+          />
         )}
 
         {/* Confirm Dialog */}
