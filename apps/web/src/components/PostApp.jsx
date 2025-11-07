@@ -36,13 +36,13 @@ function PostApp({ onNavigateToOWL }) {
       </div>
 
       {/* Seta para navegar para OWL */}
-      <div className="flex justify-center items-center mt-8 w-">
+      <div className="flex justify-center items-center mt-8">
         <button 
           onClick={onNavigateToOWL}
-          className="bg-[rgb(93,191,78)] hover:bg-[rgb(83,181,68)] transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl rounded-full p-4  flex justify-center items-center "
+          className="bg-white/30 backdrop-blur-md border border-white/20 hover:bg-white/50 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl rounded-full p-4 flex justify-center items-center"
           title="Ir para OWL - Gerenciamento"
         >
-          <MapPinned className="w-8 h-8 text-white" />
+          <MapPinned className="w-8 h-8 text-black" />
         </button>
       </div>
 

@@ -9,6 +9,7 @@ export default defineConfig({
       '/places': 'http://localhost:3000',
       '/devices': 'http://localhost:3000',
       '/locations': 'http://localhost:3000',
+      '/location': 'http://localhost:3000',
       '/readings': 'http://localhost:3000'
     }
   }
