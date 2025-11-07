@@ -7,6 +7,7 @@
     "start": "node server.js",
     "db:migrate": "npx prisma migrate dev",
     "db:generate": "npx prisma generate",
+    "db:reset": "npx prisma migrate reset",
     "web:dev": "pnpm --filter web dev",
     "web:build": "pnpm --filter web build",
     "web:preview": "pnpm --filter web preview"

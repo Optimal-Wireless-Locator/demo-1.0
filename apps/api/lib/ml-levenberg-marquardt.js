@@ -53,6 +53,7 @@ export async function trilateration( placeName, macAddress ) {
     where: {
       devicesMac_address: macAddress,
       esp32: { in: knownEspIds }, // Filtra apenas ESPs conhecidos
+      place_name: placeName 
     },
     orderBy: { read_at: 'desc' },
     take: 50, // Um buffer razoável para garantir a leitura mais recente de cada ESP
@@ -137,13 +138,14 @@ export async function trilateration( placeName, macAddress ) {
   const [x, y] = fit.parameterValues
 
   console.log(
-    `[TRILATERATION] Calculated position: [${x.toFixed(2)}, ${y.toFixed(2)}]`
+    `[TRILATERATION] Calculated position: [${x.toFixed(2)}, ${y.toFixed(2)}] - ${placeName}`
   )
 
   // Retorna um objeto limpo com a posição e os dados usados no cálculo
   return {
     x,
     y,
+    place: placeName,
     used: activeEsps.map((esp, i) => ({
       espID: esp.espID,
       rssi: esp.rssi,

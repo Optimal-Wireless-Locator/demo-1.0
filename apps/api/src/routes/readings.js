@@ -26,9 +26,12 @@ const router = Router()
  *               espID:
  *                 type: string
  *                 example: "ESP32_1"
+ *               placeID:
+ *                 type: string
+ *                 example: "138e1ad1-c488-4609-ac53-57f7938aedbc"
  *               t:
  *                 type: string
- *                 example: "14:27:53"
+ *                 example: "2025-11-07T14:27:35"
  *             required:
  *               - m
  *               - r

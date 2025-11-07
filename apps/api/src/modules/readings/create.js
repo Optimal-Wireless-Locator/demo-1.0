@@ -1,10 +1,10 @@
 import { ZodError } from 'zod'
-import { prisma } from '../../../lib/prisma.js' // Lembre do .js
-import { createReadingBodySchema } from '../../schemas/readings/response-body-schema.js' // Lembre do .js
+import { prisma } from '../../../lib/prisma.js'
+import { createReadingBodySchema } from '../../schemas/readings/response-body-schema.js'
 
 export const createReading = async (req, res) => {
   try {
-    const { m, r, espID } = createReadingBodySchema.parse(req.body)
+    const { m, r, espID, placeID, t } = createReadingBodySchema.parse(req.body)
 
     const deviceExists = await prisma.devices.findUnique({
       where: {
@@ -16,6 +16,16 @@ export const createReading = async (req, res) => {
       return res.status(404).send('Device not found.')
     }
 
+    const place = await prisma.places.findUnique({
+      where: {
+        id: placeID,
+      },
+    })
+
+    if (!place) {
+      return res.status(404).send('Place not found.')
+    }
+
     const rssiInt = parseInt(String(r), 10)
 
     if (isNaN(rssiInt)) {
@@ -25,8 +35,9 @@ export const createReading = async (req, res) => {
     const newReading = await prisma.readings.create({
       data: {
         esp32: espID,
+        place_name: place.name,
         rssi: rssiInt,
-        read_at: new Date(),
+        read_at: t,
         devicesMac_address: deviceExists.mac_address,
       },
     })
