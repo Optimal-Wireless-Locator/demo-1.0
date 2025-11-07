@@ -2,13 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2, ArrowLeft } from 'lucide-react';
 import { useApiData } from '../hooks/useApiData';
+import { useTagLocations } from '../hooks/useTagLocations';
 import StatsCards from './StatsCards';
 import SearchAndFilters from './SearchAndFilters';
 import PlaceVisualization from './PlaceVisualization';
 import PlacesGallery from './PlacesGallery';
 import ConfirmDialog from './ConfirmDialog';
+
 import logo from '../assets/images/logo.svg';
-import logotipo from '../assets/images/owlwhite.svg';
+import logotipo from '../assets/images/logo.svg';
 
 function ManagementPage({ onBackToHome }) {
   const [activeTab, setActiveTab] = useState('places');
@@ -38,6 +40,11 @@ function ManagementPage({ onBackToHome }) {
     deletePlace,
     deleteDevice
   } = useApiData();
+
+  // Hook para localizações das tags
+  const { 
+    locations: tagLocations
+  } = useTagLocations(places, devices, 5000);
 
   const handleEdit = (item, type) => {
     setEditingItem({ ...item, type });
@@ -131,10 +138,10 @@ function ManagementPage({ onBackToHome }) {
   }, [devices, searchTerm, sortBy]);
 
   const PlacesTable = () => (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-800">
+          <thead className="bg-white/10 backdrop-blur-md">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Nome</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Largura</th>
@@ -152,7 +159,7 @@ function ManagementPage({ onBackToHome }) {
                     <input
                       value={editForm.name || ''}
                       onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     place.name
@@ -164,7 +171,7 @@ function ManagementPage({ onBackToHome }) {
                       type="number"
                       value={editForm.width || ''}
                       onChange={(e) => setEditForm({...editForm, width: parseFloat(e.target.value)})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     `${place.width}m`
@@ -176,7 +183,7 @@ function ManagementPage({ onBackToHome }) {
                       type="number"
                       value={editForm.height || ''}
                       onChange={(e) => setEditForm({...editForm, height: parseFloat(e.target.value)})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     `${place.height}m`
@@ -188,7 +195,7 @@ function ManagementPage({ onBackToHome }) {
                       type="number"
                       value={editForm.one_meter_rssi || ''}
                       onChange={(e) => setEditForm({...editForm, one_meter_rssi: parseFloat(e.target.value)})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     `${place.one_meter_rssi} dBm`
@@ -201,7 +208,7 @@ function ManagementPage({ onBackToHome }) {
                       step="0.1"
                       value={editForm.propagation_factor || ''}
                       onChange={(e) => setEditForm({...editForm, propagation_factor: parseFloat(e.target.value)})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     place.propagation_factor
@@ -213,13 +220,13 @@ function ManagementPage({ onBackToHome }) {
                       <>
                         <button
                           onClick={handleSaveEdit}
-                          className="p-1 text-[rgb(93,191,78)] hover:bg-gray-800 rounded"
+                          className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => {setEditingItem(null); setEditForm({});}}
-                          className="p-1 text-gray-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <X size={16} />
                         </button>
@@ -228,27 +235,27 @@ function ManagementPage({ onBackToHome }) {
                       <>
                         <button
                           onClick={() => setViewingPlace(place)}
-                          className="p-1 text-gray-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                           title="Visualizar place"
                         >
                           <Eye size={16} />
                         </button>
                         <button
                           onClick={() => setFullscreenPlace(place)}
-                          className="p-1 text-[rgb(93,191,78)] hover:bg-gray-800 rounded"
+                          className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
                           title="Ver em tela cheia"
                         >
                           <Maximize2 size={16} />
                         </button>
                         <button
                           onClick={() => handleEdit(place, 'place')}
-                          className="p-1 text-gray-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(place, 'place')}
-                          className="p-1 text-red-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-red-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -265,10 +272,10 @@ function ManagementPage({ onBackToHome }) {
   );
 
   const DevicesTable = () => (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-800">
+          <thead className="bg-white/10 backdrop-blur-md">
             <tr>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Nome</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">MAC Address</th>
@@ -283,7 +290,7 @@ function ManagementPage({ onBackToHome }) {
                     <input
                       value={editForm.name || ''}
                       onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     device.name
@@ -294,7 +301,7 @@ function ManagementPage({ onBackToHome }) {
                     <input
                       value={editForm.mac_address || ''}
                       onChange={(e) => setEditForm({...editForm, mac_address: e.target.value})}
-                      className="w-full bg-gray-800 border border-gray-600 text-white rounded px-2 py-1"
+                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
                     />
                   ) : (
                     device.mac_address
@@ -306,13 +313,13 @@ function ManagementPage({ onBackToHome }) {
                       <>
                         <button
                           onClick={handleSaveEdit}
-                          className="p-1 text-[rgb(93,191,78)] hover:bg-gray-800 rounded"
+                          className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <Save size={16} />
                         </button>
                         <button
                           onClick={() => {setEditingItem(null); setEditForm({});}}
-                          className="p-1 text-gray-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <X size={16} />
                         </button>
@@ -321,13 +328,13 @@ function ManagementPage({ onBackToHome }) {
                       <>
                         <button
                           onClick={() => handleEdit(device, 'device')}
-                          className="p-1 text-gray-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(device, 'device')}
-                          className="p-1 text-red-400 hover:bg-gray-800 rounded"
+                          className="p-1 text-red-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -354,23 +361,31 @@ function ManagementPage({ onBackToHome }) {
           </div>
           <button
             onClick={() => setFullscreenPlace(null)}
-            className="p-2 text-white hover:bg-gray-800 rounded-lg"
+            className="p-2 text-white hover:bg-white/10 hover:backdrop-blur-md rounded-lg"
           >
             <X size={24} />
           </button>
         </div>
         
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center">
-            <PlaceVisualization place={fullscreenPlace} fullscreen={true} />
-            <div className="mt-6 text-white">
-              <p className="text-lg">
-                Dimensões: {fullscreenPlace.width}m × {fullscreenPlace.height}m
-              </p>
-              <p className="text-gray-400">
-                Área total: {(fullscreenPlace.width * fullscreenPlace.height).toFixed(1)} m²
-              </p>
-            </div>
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <div className="mb-6 text-center text-white">
+            <p className="text-xl font-semibold">
+              Dimensões: {fullscreenPlace.width}m × {fullscreenPlace.height}m
+            </p>
+            <p className="text-lg text-gray-300">
+              Área total: {(fullscreenPlace.width * fullscreenPlace.height).toFixed(1)} m²
+            </p>
+            <p className="text-sm text-gray-400 mt-2">
+              Use o scroll do mouse para dar zoom no mapa
+            </p>
+          </div>
+          
+          <div className="flex-1 flex items-center justify-center">
+            <PlaceVisualization 
+              place={fullscreenPlace} 
+              tagLocations={tagLocations}
+              fullscreen={true} 
+            />
           </div>
         </div>
       </div>
@@ -388,7 +403,7 @@ function ManagementPage({ onBackToHome }) {
             </div>
             <button
               onClick={onBackToHome}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-lg transition-colors"
               title="Voltar para Home"
             >
               <ArrowLeft size={20} />
@@ -435,13 +450,14 @@ function ManagementPage({ onBackToHome }) {
               >
                 Visualizações
               </button>
+
             </nav>
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-900 border border-red-700 rounded-lg p-4">
+          <div className="mb-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4">
             <div className="flex">
               <div className="text-red-300">
                 <strong>Erro:</strong> {error}
@@ -483,7 +499,7 @@ function ManagementPage({ onBackToHome }) {
                     <button
                       onClick={handleRefresh}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-4 py-2 bg-[rgb(93,191,78)] text-white rounded-lg hover:bg-[rgb(83,181,68)] transition-colors disabled:opacity-50"
+                      className="flex items-center space-x-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-lg transition-colors disabled:opacity-50"
                     >
                       <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
                       <span>Atualizar</span>
@@ -509,7 +525,7 @@ function ManagementPage({ onBackToHome }) {
                     <button
                       onClick={handleRefresh}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-4 py-2 bg-[rgb(93,191,78)] text-white rounded-lg hover:bg-[rgb(83,181,68)] transition-colors disabled:opacity-50"
+                      className="flex items-center space-x-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-lg transition-colors disabled:opacity-50"
                     >
                       <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
                       <span>Atualizar</span>
@@ -535,15 +551,21 @@ function ManagementPage({ onBackToHome }) {
                     <button
                       onClick={fetchPlaces}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-4 py-2 bg-[rgb(93,191,78)] text-white rounded-lg hover:bg-[rgb(83,181,68)] transition-colors disabled:opacity-50"
+                      className="flex items-center space-x-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white rounded-lg transition-colors disabled:opacity-50"
                     >
                       <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
                       <span>Atualizar</span>
                     </button>
                   </div>
-                  <PlacesGallery places={places} />
+                  <PlacesGallery 
+                    places={places} 
+                    tagLocations={tagLocations}
+                    onPlaceFullscreen={setFullscreenPlace}
+                  />
                 </div>
               )}
+
+
             </>
           )}
         </motion.div>
@@ -561,7 +583,7 @@ function ManagementPage({ onBackToHome }) {
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="relative bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+              className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -571,15 +593,19 @@ function ManagementPage({ onBackToHome }) {
                   </h3>
                   <button
                     onClick={() => setViewingPlace(null)}
-                    className="p-2 hover:bg-gray-800 rounded-full text-gray-400"
+                    className="p-2 hover:bg-white/10 hover:backdrop-blur-md rounded-full text-gray-400"
                   >
                     <X size={20} />
                   </button>
                 </div>
                 
-                <PlaceVisualization place={viewingPlace} />
+                <PlaceVisualization 
+                  place={viewingPlace} 
+                  tagLocations={tagLocations}
+                  fullscreen={false}
+                />
                 
-                <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+                <div className="mt-4 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg">
                   <h4 className="font-semibold text-white mb-2">Detalhes Técnicos</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>

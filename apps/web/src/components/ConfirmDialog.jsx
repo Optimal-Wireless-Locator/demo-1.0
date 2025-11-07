@@ -62,7 +62,7 @@ function ConfirmDialog({
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className={`relative bg-gray-900 border ${styles.border} rounded-lg shadow-xl max-w-md w-full`}
+        className={`relative bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-xl max-w-md w-full`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -89,13 +89,13 @@ function ConfirmDialog({
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 rounded-lg transition-colors"
             >
               {cancelText}
             </button>
             <button
               onClick={handleConfirm}
-              className={`px-4 py-2 rounded-lg transition-colors ${styles.confirmButton}`}
+              className="px-4 py-2 text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 rounded-lg transition-colors"
             >
               {confirmText}
             </button>

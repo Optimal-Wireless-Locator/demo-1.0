@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import PlaceVisualization from './PlaceVisualization';
 
-function PlacesGallery({ places }) {
+function PlacesGallery({ places, tagLocations = [], onPlaceFullscreen }) {
   if (!places || places.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -20,7 +20,11 @@ function PlacesGallery({ places }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
         >
-          <PlaceVisualization place={place} />
+          <PlaceVisualization 
+            place={place} 
+            tagLocations={tagLocations}
+            onFullscreen={() => onPlaceFullscreen && onPlaceFullscreen(place)}
+          />
         </motion.div>
       ))}
     </div>
