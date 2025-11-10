@@ -4,7 +4,7 @@
     <strong>Repository for the first demonstration (v1.0) of the Indoor Positioning System (IPS).</strong>
   </p>
   <p>
-    <img src="https://img.shields.io/badge/Version-Demo%201.0-purple" alt="Status: Demo Version">
+    <img src="https://img.shields.io/badge/Version-Demo%201.0-purple" alt="Status">
     <img src="https://img.shields.io/badge/Tech-ESP32%20%7C%20BLE%20%7C%20Node.js%20%7C%20React.js-green" alt="Technologies">
     <img src="https://img.shields.io/badge/Database-PostgreSQL-blueviolet" alt="Database">
   </p>
@@ -20,7 +20,7 @@ This repository (`demo-1.0`) stores the first functional and consolidated versio
 
 The goal of the OWL project is to create an affordable and efficient **indoor tracking system (IPS)**, born from the need to increase asset security in the Maker Space at ETEC Bento Quirino.
 
-While the main organization <a href="https://github.com/Optimal-Wireless-Locator/Optimal-Wireless-Locator">Optimal-Wireless-Locator</a> describes the project at a high level, **this repository contains the functional source code for v1.0**, ready for demonstration and analysis.
+While the main organization <a href="https://github.com/Optimal-Wireless-Locator">Optimal-Wireless-Locator</a> describes the project at a high level, **this repository contains the functional source code for v1.0**, ready for demonstration and analysis.
 
 ## 2. Repository Structure
 
