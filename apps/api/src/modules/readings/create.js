@@ -32,6 +32,15 @@ export const createReading = async (req, res) => {
       return res.status(400).send('Invalid RSSI value.')
     }
 
+    await prisma.devices.update({
+      where: {
+        mac_address: m,
+      },
+      data: {
+        last_read: t,
+      }
+    })
+
     const newReading = await prisma.readings.create({
       data: {
         esp32: espID,

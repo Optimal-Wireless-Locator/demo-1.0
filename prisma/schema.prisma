@@ -8,8 +8,9 @@ datasource db {
 }
 
 model Devices {
-  mac_address String @id
+  mac_address String   @id
   name        String
+  last_read   DateTime?
 }
 
 model Places {
