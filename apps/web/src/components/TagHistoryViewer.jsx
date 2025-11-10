@@ -138,9 +138,11 @@ function TagHistoryViewer({ tag, places, onClose }) {
                       type="datetime-local"
                       value={selectedDateTime}
                       onChange={handleDateTimeChange}
-                      min={history.length > 0 ? new Date(history[history.length - 1].tracked_at).toISOString().slice(0, 16) : ''}
-                      max={history.length > 0 ? new Date(history[0].tracked_at).toISOString().slice(0, 16) : ''}
+                      step="1"
                       className="flex-1 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white focus:outline-none focus:border-[rgb(93,191,78)]"
+                      style={{
+                        colorScheme: 'dark'
+                      }}
                     />
                     {selectedDateTime && (
                       <button
@@ -172,7 +174,7 @@ function TagHistoryViewer({ tag, places, onClose }) {
                   )}
                   {!selectedDateTime && (
                     <p className="text-xs text-gray-500 mt-1">
-                      O sistema encontrará o registro mais próximo do horário selecionado
+                      Selecione data e hora - o sistema encontrará o registro mais próximo
                     </p>
                   )}
                 </div>
