@@ -1,11 +1,11 @@
 import { prisma } from './prisma.js'
 import { levenbergMarquardt } from 'ml-levenberg-marquardt'
 
-// Função de trilateração
-export async function trilateration( placeName, macAddress ) {
+// Trilateration function
+export async function trilateration(placeName, macAddress) {
   console.log(`[TRILATERATION] Starting calculation for MAC: ${macAddress}`)
 
-  // Busca o lugar pelo nome
+  // Search the place by name
   const place = await prisma.places.findFirst({
     where: {
       name: placeName,
@@ -18,14 +18,15 @@ export async function trilateration( placeName, macAddress ) {
 
   const { width, height, name, one_meter_rssi, propagation_factor } = place
 
-  // RSSI de um metro e Fator de Propagação
+  // RSSI at one meter and Propagation Factor
   const calibrationRssi = {
-    // Potência de transmissão (RSSI a 1 metro). Deve ser calibrado.
+    // Transmission power (RSSI at 1 meter). Must be calibrated.
     oneMeterRssi: one_meter_rssi,
-    // Expoente de perda de caminho (path-loss). Depende do ambiente (paredes, etc.)
+    // Path-loss exponent. Depends on the environment (walls, etc.)
     propagationFactor: propagation_factor,
   }
-  // Configurações da função 'levenbergMarquardt' da lib 'ml-levenberg-marquardt'
+
+  // 'levenbergMarquardt' options from 'ml-levenberg-marquardt' library
   const lmOptions = {
     damping: 1.5,
     gradientDifference: 1e-6,
@@ -33,43 +34,41 @@ export async function trilateration( placeName, macAddress ) {
     errorTolerance: 1e-6,
   }
 
-  // Retorna a distancia em metros
+  // Return distance in meters
   function rssiToDistance(rssi) {
     const { oneMeterRssi, propagationFactor } = calibrationRssi
 
-    // Fórmula de conversão
+    // Conversion formula
     return Math.pow(10, (oneMeterRssi - rssi) / (10 * propagationFactor))
   }
 
   console.log(`Place: ${name} - ${width}m x ${height}m`)
 
-  // Definição da posição dos ESP32
+  // ESP32 positions definition
   const espPositionsMap = JSON.parse(place.esp_positions)
-
   const knownEspIds = Object.keys(espPositionsMap)
 
-  // Busca as ultimas leituras da tag específica
+  // Fetch the latest readings of the specific tag
   const recentReadings = await prisma.readings.findMany({
     where: {
       devicesMac_address: macAddress,
-      esp32: { in: knownEspIds }, // Filtra apenas ESPs conhecidos
-      place_name: placeName 
+      esp32: { in: knownEspIds }, // Filter only known ESPs
+      place_name: placeName,
     },
     orderBy: { read_at: 'desc' },
-    take: 50, // Um buffer razoável para garantir a leitura mais recente de cada ESP
+    take: 50, // Reasonable buffer to ensure latest readings from each ESP
   })
 
-  // Obter o RSSI Mais Recente de Cada ESP
+  // Get the most recent RSSI from each ESP
   const latestRssiPerEsp = new Map()
   for (const reading of recentReadings) {
     if (!latestRssiPerEsp.has(reading.esp32)) {
-      // O schema 'Readings' define 'rssi' como Int, eliminando
-      // a necessidade de 'parseFloat' ou 'trim'.
+      // The 'Readings' schema defines 'rssi' as Int, no need for parseFloat or trim
       latestRssiPerEsp.set(reading.esp32, reading.rssi)
     }
   }
 
-  // Montar Lista de Sensores Ativos
+  // Build list of active sensors
   const activeEsps = []
   for (const [espID, rssi] of latestRssiPerEsp.entries()) {
     activeEsps.push({
@@ -79,10 +78,10 @@ export async function trilateration( placeName, macAddress ) {
     })
   }
 
-  // Validação crucial: O algoritmo precisa de pelo menos 3 pontos
+  // Critical validation: algorithm requires at least 3 points
   if (activeEsps.length < 3) {
     throw new Error(
-      `Less than 3 active ESPs detected (detected: ${activeEsps.length}) - Impossible to triangular.`
+      `Less than 3 active ESPs detected (detected: ${activeEsps.length}) - Impossible to triangulate.`
     )
   }
 
@@ -91,25 +90,25 @@ export async function trilateration( placeName, macAddress ) {
     activeEsps.map((e) => `${e.espID} (RSSI: ${e.rssi})`).join(', ')
   )
 
-  // Preparar Dados para Levenberg-Marquardt - O algoritmo espera vetores de dados.
+  // Prepare data for Levenberg-Marquardt - the algorithm expects data vectors
   const distances = activeEsps.map((esp) => rssiToDistance(esp.rssi))
   const sensorPositions = activeEsps.map((esp) => esp.position)
 
-  // 'data.x' são apenas os índices (0, 1, 2, ...)
-  // 'data.y' são as distâncias calculadas (metros)
+  // 'data.x' are just indexes (0, 1, 2, ...)
+  // 'data.y' are the calculated distances (in meters)
   const data = {
     x: Array.from({ length: distances.length }, (_, i) => i),
     y: distances,
   }
 
-  // Esta é a função que o LM tentará "fittar"
-  // Ela calcula a distância euclidiana de um ponto (posX, posY)
-  // até o sensor na posição `sensorPositions[sensorIndex]`
+  // Function that LM will try to fit
+  // Calculates Euclidean distance from (posX, posY)
+  // to sensor at position `sensorPositions[sensorIndex]`
   function trilaterationModel([posX, posY]) {
     return function (sensorIndex) {
       const pos = sensorPositions[sensorIndex]
       if (!pos) {
-        // Verificação de segurança, embora não deva acontecer
+        // Safety check, should not happen
         throw new Error(`Sensor position ${sensorIndex} not found.`)
       }
       return Math.sqrt(Math.pow(posX - pos.x, 2) + Math.pow(posY - pos.y, 2))
@@ -117,9 +116,9 @@ export async function trilateration( placeName, macAddress ) {
   }
 
   let initialGuess = null
-  // Configurar e Executar o Algoritmo
-  // Define o chute inicial. Se nenhum foi fornecido, usa o centro da sala
-  // Usar a última posição conhecida (initialGuess) acelera a convergência
+  // Configure and run the algorithm
+  // Define initial guess. If not provided, use the center of the room
+  // Using last known position (initialGuess) speeds up convergence
   const finalInitialGuess = initialGuess || [width / 2, height / 2]
 
   const options = {
@@ -133,15 +132,17 @@ export async function trilateration( placeName, macAddress ) {
       .join(', ')}]`
   )
 
-  // Executa o cálculo com a funcao 'levenbergMarquardt'
+  // Run the calculation using 'levenbergMarquardt'
   const fit = levenbergMarquardt(data, trilaterationModel, options)
   const [x, y] = fit.parameterValues
 
   console.log(
-    `[TRILATERATION] Calculated position: [${x.toFixed(2)}, ${y.toFixed(2)}] - ${placeName}`
+    `[TRILATERATION] Calculated position: [${x.toFixed(2)}, ${y.toFixed(
+      2
+    )}] - ${placeName}`
   )
 
-  // Retorna um objeto limpo com a posição e os dados usados no cálculo
+  // Return a clean object with position and calculation data
   return {
     x,
     y,
@@ -149,7 +150,7 @@ export async function trilateration( placeName, macAddress ) {
     used: activeEsps.map((esp, i) => ({
       espID: esp.espID,
       rssi: esp.rssi,
-      estimated_distance: distances[i], // Distância que foi usada no cálculo
+      estimated_distance: distances[i], // Distance used in calculation
     })),
   }
 }
