@@ -23,14 +23,6 @@ export const updatePlace = async (req, res) => {
       dataToUpdate.name = data.name
     }
 
-    if (data.width !== undefined) {
-      dataToUpdate.width = data.width
-    }
-
-    if (data.height !== undefined) {
-      dataToUpdate.height = data.height
-    }
-
     if (data.one_meter_rssi !== undefined) {
       dataToUpdate.one_meter_rssi = data.one_meter_rssi
     }
