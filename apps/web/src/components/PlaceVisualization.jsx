@@ -7,22 +7,15 @@ function PlaceVisualization({ place, fullscreen = false, tagLocations = [], onFu
   const { width, height, name } = place;
   const [zoomLevel, setZoomLevel] = useState(1);
   
-  // Calcular escala baseada na regra: 15 metros = 40px
-  // Se for maior que 15m, cada metro vale menos px
-  // Se for menor que 15m, cada metro vale mais px
+  // Calcular escala mantendo proporção correta (1:1)
+  // Usar a maior dimensão como referência para garantir que tudo caiba
   const baseMeters = 15;
   const basePixels = 40;
   
   const maxDimension = Math.max(width, height);
-  let pixelsPerMeter;
   
-  if (maxDimension <= baseMeters) {
-    // Para dimensões menores ou iguais a 15m, aumenta proporcionalmente
-    pixelsPerMeter = basePixels * (baseMeters / maxDimension);
-  } else {
-    // Para dimensões maiores que 15m, diminui proporcionalmente
-    pixelsPerMeter = basePixels * (baseMeters / maxDimension);
-  }
+  // Calcular pixels por metro baseado na maior dimensão
+  let pixelsPerMeter = (basePixels * baseMeters) / maxDimension;
   
   // Garantir um mínimo de pixels para visualização
   pixelsPerMeter = Math.max(pixelsPerMeter, 10);
@@ -32,7 +25,7 @@ function PlaceVisualization({ place, fullscreen = false, tagLocations = [], onFu
   const svgWidth = width * pixelsPerMeter + (padding * 2);
   const svgHeight = height * pixelsPerMeter + (padding * 2);
   
-  // Limitar tamanho máximo do SVG para não quebrar o layout
+  // Limitar tamanho máximo do SVG mantendo proporção
   const maxSvgSize = fullscreen ? 800 : 400;
   let finalWidth = svgWidth;
   let finalHeight = svgHeight;
@@ -91,6 +84,7 @@ function PlaceVisualization({ place, fullscreen = false, tagLocations = [], onFu
           width={zoomedWidth}
           height={zoomedHeight}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          preserveAspectRatio="xMidYMid meet"
           className={`border border-gray-300 bg-white rounded ${!fullscreen ? 'cursor-pointer' : ''}`}
           onWheel={handleWheel}
           onClick={!fullscreen && onFullscreen ? onFullscreen : undefined}

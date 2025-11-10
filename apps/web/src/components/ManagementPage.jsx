@@ -1,14 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2, ArrowLeft, Clock } from 'lucide-react';
+import { Edit2, Trash2, Save, X, RefreshCw, Eye, Maximize2, ArrowLeft, Clock, AlertCircle, MinusCircle } from 'lucide-react';
 import { useApiData } from '../hooks/useApiData';
-import { useTagLocations } from '../hooks/useTagLocations';
+import { useTagLocations, getTagStatus } from '../hooks/useTagLocations';
+import { useOutOfBoundsNotification } from '../hooks/useOutOfBoundsNotification';
 import StatsCards from './StatsCards';
 import SearchAndFilters from './SearchAndFilters';
 import PlaceVisualization from './PlaceVisualization';
 import PlacesGallery from './PlacesGallery';
 import ConfirmDialog from './ConfirmDialog';
 import TagHistoryViewer from './TagHistoryViewer';
+import Toast from './Toast';
 
 import logo from '../assets/images/logo.svg';
 import logotipo from '../assets/images/logo.svg';
@@ -47,6 +49,9 @@ function ManagementPage({ onBackToHome }) {
   const { 
     locations: tagLocations
   } = useTagLocations(places, devices, 5000);
+
+  // Hook para notificações de tags fora do mapa
+  const { notification, clearNotification } = useOutOfBoundsNotification(tagLocations);
 
   const handleEdit = (item, type) => {
     setEditingItem({ ...item, type });
@@ -168,28 +173,10 @@ function ManagementPage({ onBackToHome }) {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  {editingItem?.id === place.id ? (
-                    <input
-                      type="number"
-                      value={editForm.width || ''}
-                      onChange={(e) => setEditForm({...editForm, width: parseFloat(e.target.value)})}
-                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
-                    />
-                  ) : (
-                    `${place.width}m`
-                  )}
+                  <span className="text-gray-400">{place.width}m</span>
                 </td>
                 <td className="px-4 py-3">
-                  {editingItem?.id === place.id ? (
-                    <input
-                      type="number"
-                      value={editForm.height || ''}
-                      onChange={(e) => setEditForm({...editForm, height: parseFloat(e.target.value)})}
-                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
-                    />
-                  ) : (
-                    `${place.height}m`
-                  )}
+                  <span className="text-gray-400">{place.height}m</span>
                 </td>
                 <td className="px-4 py-3">
                   {editingItem?.id === place.id ? (
@@ -281,78 +268,129 @@ function ManagementPage({ onBackToHome }) {
             <tr>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Nome</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">MAC Address</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Status</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {filteredDevices.map((device) => (
-              <tr key={device.mac_address} className="border-t border-gray-800 text-white">
-                <td className="px-4 py-3">
-                  {editingItem?.mac_address === device.mac_address ? (
-                    <input
-                      value={editForm.name || ''}
-                      onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
-                    />
-                  ) : (
-                    device.name
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  {editingItem?.mac_address === device.mac_address ? (
-                    <input
-                      value={editForm.mac_address || ''}
-                      onChange={(e) => setEditForm({...editForm, mac_address: e.target.value})}
-                      className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
-                    />
-                  ) : (
-                    device.mac_address
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex space-x-2">
+            {filteredDevices.map((device) => {
+              const status = getTagStatus(device.last_read);
+              const lastReadTime = device.last_read ? new Date(device.last_read) : null;
+              const timeSinceLastRead = lastReadTime 
+                ? Math.floor((new Date() - lastReadTime) / (1000 * 60)) 
+                : null;
+              
+              // Verificar se a tag está fora do mapa
+              const tagLocation = tagLocations.find(loc => loc.mac_address === device.mac_address);
+              const isOutOfBounds = tagLocation?.isOutOfBounds;
+
+              return (
+                <tr key={device.mac_address} className="border-t border-gray-800 text-white">
+                  <td className="px-4 py-3">
                     {editingItem?.mac_address === device.mac_address ? (
-                      <>
-                        <button
-                          onClick={handleSaveEdit}
-                          className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
-                        >
-                          <Save size={16} />
-                        </button>
-                        <button
-                          onClick={() => {setEditingItem(null); setEditForm({});}}
-                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
-                        >
-                          <X size={16} />
-                        </button>
-                      </>
+                      <input
+                        value={editForm.name || ''}
+                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
+                      />
                     ) : (
-                      <>
-                        <button
-                          onClick={() => setViewingTagHistory(device)}
-                          className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
-                          title="Ver histórico"
-                        >
-                          <Clock size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(device, 'device')}
-                          className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(device, 'device')}
-                          className="p-1 text-red-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
+                      device.name
                     )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-4 py-3">
+                    {editingItem?.mac_address === device.mac_address ? (
+                      <input
+                        value={editForm.mac_address || ''}
+                        onChange={(e) => setEditForm({...editForm, mac_address: e.target.value})}
+                        className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white rounded px-2 py-1"
+                      />
+                    ) : (
+                      device.mac_address
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {status === 'active' ? (
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-[rgb(93,191,78)] rounded-full animate-pulse"></div>
+                          <span className="text-[rgb(93,191,78)] text-sm">Ativa</span>
+                          {timeSinceLastRead !== null && (
+                            <span className="text-gray-400 text-xs">
+                              ({timeSinceLastRead}min atrás)
+                            </span>
+                          )}
+                        </div>
+                        {isOutOfBounds && (
+                          <div className="flex items-center space-x-1 ml-4">
+                            <AlertCircle size={14} className="text-red-400" />
+                            <span className="text-red-400 text-xs font-semibold">
+                              Tag saiu do mapa ({tagLocation.placeName})
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : status === 'inactive' ? (
+                      <div className="flex items-center space-x-2">
+                        <AlertCircle size={16} className="text-red-400" />
+                        <span className="text-red-400 text-sm">Tag não encontrada</span>
+                        {timeSinceLastRead !== null && (
+                          <span className="text-gray-400 text-xs">
+                            ({timeSinceLastRead}min atrás)
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <MinusCircle size={16} className="text-gray-400" />
+                        <span className="text-gray-400 text-sm">Não usada</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex space-x-2">
+                      {editingItem?.mac_address === device.mac_address ? (
+                        <>
+                          <button
+                            onClick={handleSaveEdit}
+                            className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
+                          >
+                            <Save size={16} />
+                          </button>
+                          <button
+                            onClick={() => {setEditingItem(null); setEditForm({});}}
+                            className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setViewingTagHistory(device)}
+                            className="p-1 text-[rgb(93,191,78)] hover:bg-white/10 hover:backdrop-blur-md rounded"
+                            title="Ver histórico"
+                          >
+                            <Clock size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(device, 'device')}
+                            className="p-1 text-gray-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(device, 'device')}
+                            className="p-1 text-red-400 hover:bg-white/10 hover:backdrop-blur-md rounded"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -540,6 +578,7 @@ function ManagementPage({ onBackToHome }) {
                       <span>Atualizar</span>
                     </button>
                   </div>
+
                   {filteredDevices.length === 0 ? (
                     <div className="text-center py-12 text-gray-400">
                       {devices.length === 0 
@@ -657,6 +696,16 @@ function ManagementPage({ onBackToHome }) {
           title={confirmDialog.title}
           message={confirmDialog.message}
           type={confirmDialog.type}
+        />
+
+        {/* Toast de notificação para tags fora do mapa */}
+        <Toast
+          isVisible={notification !== null}
+          onClose={clearNotification}
+          message={notification ? `⚠️ ${notification.deviceName} saiu do mapa em ${notification.placeName}! Coordenadas: x=${notification.x.toFixed(2)}m, y=${notification.y.toFixed(2)}m` : ''}
+          type="error"
+          duration={6000}
+          position="top-right"
         />
       </div>
     </div>
